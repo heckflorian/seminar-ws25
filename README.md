@@ -84,22 +84,23 @@ Wird jetzt der `Shape` typ aus dem beispiel erweitert ohne das switch statement 
 
 ```ts
 interface Triangle {
-	kind: "triangle";
-	sideLength: number;
+    kind: "triangle";
+    sideLength: number;
 }
 
 type Shape = Circle | Square | Triangle;
 
 function getArea(shape: Shape) {
-	switch (shape.kind) {
-		case "circle":
-			return Math.PI * shape.radius ** 2;
-		case "square":
-			return shape.sideLength ** 2;
-		default: // nicht mehr alle fälle durch case blöcke abgedeckt
-			const _exhaustiveCheck: never = shape;
-			// Type 'Triangle' is not assignable to type 'never'.
-			return _exhaustiveCheck;
+    switch (shape.kind) {
+        case "circle":
+            return Math.PI * shape.radius ** 2;
+        case "square":
+            return shape.sideLength ** 2;
+        default: // nicht mehr alle fälle durch case blöcke abgedeckt
+            const _exhaustiveCheck: never = shape;
+            // Type 'Triangle' is not assignable to type 'never'.
+            return _exhaustiveCheck;
+    }
 }
 ```
 
@@ -132,7 +133,7 @@ ein bestimmter Typ von Daten in den jeweiligen Daten verwendet wird.
 
 ```ts
 export const makeFormData: MakeFormData = (val) => {
-    return { value } as FormData<Unvalidated>;
+    return { value: val } as FormData<Unvalidated>;
 };
 ```
 
