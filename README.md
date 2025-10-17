@@ -127,7 +127,81 @@ Zum schluss brauchen wir vielleicht noch eine `process` Funktion, welche unsere 
 type Process = (a: FormData<Validated>) => FormData<Validated>;
 ```
 
-Da wir nun diese Helfer Funktionen definiert haben, können wir nun daraus Funktionen implementieren, welche sicherstellen
+Da wir nun diese Helfer Funktionen definiert haben, können wir nun daraus Funktionen implementieren, welche sicherstellen, dass nur
+ein bestimmter Typ von Daten in den jeweiligen Daten verwendet wird.
+
+```ts
+export const makeFormData: MakeFormData = (val) => {
+    return { value } as FormData<Unvalidated>;
+};
+```
+
+Wenn wir uns die Typdefinition von `MakeFormData` anschauen, sehen wir, dass diese
+Funktion einen String entgegen nimmt und unvalidierte `FormData` zurück gibt. Nutzer
+der Bibliothek können `value` nicht definieren, da es als `never` Typ definiert ist. Sobald
+dieser Typ erstellt wurde, können Nutzer den zurück gegebenen Wert validieren oder
+kapitalisieren.
+
+Nun schauen wir, wie wir die `upperCase` und `validate` Funktionen implementieren:
+
+```ts
+export const upperCase: UpperCase = (data) => {
+    const internalData = data as InternalUnvalidated;
+    return { value: internalData.value.toUpperCase() } as FormData<Unvalidated>;
+};
+
+export const validate: Validate = (data) => {
+    const internalData = data as InternalUnvalidated;
+    if (internalData.value.length > 3) {
+        return { value: internalData.value } as FormaData<Validated>;
+    }
+    return null;
+};
+```
+
+Wenn wir diese beiden Funktionen anschauen, fällt eine Sache auf. Wir müssen die enthaltenen
+Daten casten. Aber was ist `InternalUnvalidated`?
+
+```ts
+type InternalUnvalidated = Unvalidated & {
+    value: string;
+};
+
+type InternalValidated = Validated & {
+    value: string;
+};
+```
+
+Hier definieren wir eine interne Repräsentation unserer Daten, die von Nutzern der Bibliothek
+versteckt wird. Wir geben hier an, das `value` ein `string` ist in diesem Fall.
+`process` kann auf die selbe weise geschrieben werden, nur das wir auf `InternalValidated`
+casten, da wir einen `FormData<Validated>` Typen erwarten.
+
+```ts
+export const process: Process = (data: FormData<Validated>) => {
+    const internalData = data as InternalValidated;
+    // Mache etwas mit den Daten
+    return { value: internalData.value } as FormData<Validated>;
+};
+```
+
+Dies können wir auch testen
+
+```ts
+const initialData = makeFormData("test");
+const validatedData = validate(initialData);
+
+// validate("hello") // Type '"hello"' is not assignable to type '{value: never}'
+// validate({value: "hello"}) // Type 'string' is not assignable to type 'never'
+
+if (validatedData !== null) {
+    // validate(validatedData); // Error! Type '"Validated"' is not assignable to Type '"Unvalidated"'
+    upperCase(initialData);
+    // upperCase(validatedData) // Error! Type '"Validated"' is not assignable to Type '"Unvalidated"'
+    process(validatedData);
+    // process(initialData); // Error! Type '"Unvalidated"' is not assignable to Type '"Validated"'
+}
+```
 
 [^1]: https://dev.to/busypeoples/notes-on-typescript-phantom-types-kg9
 [^2]: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html
