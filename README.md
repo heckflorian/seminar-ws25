@@ -4,7 +4,7 @@ Dieses Repository ist meine Abgabe zum Seminar "Was du schon immer über Program
 
 In diesem Repo möchte ich ein paar Verwendungen von expressiven Typen in TypeScript aufzeigen.
 
-## Phantom Types und Verwendung[^1]
+## Phantom Types und Verwendung [^1]
 
 Phantom Types sind Typen, die eine generische komponente haben, die nicht auf der rechten seite der typ deklaration vorkommen
 
@@ -29,7 +29,7 @@ Als nächstes implementieren wir einen `FormData` Typen, der es dem Nutzer der B
 type FormData<T, D = never> = { value: never } & T;
 ```
 
-## TypeScript `never` [^2][^3][^4]
+## TypeScript `never` [^2] [^3] [^4]
 
 "The **never** type represents the type of values that never occur. Variables also acquire the type **never** when narrowed by any type guards that can never be true."
 
@@ -208,7 +208,7 @@ if (validatedData !== null) {
 
 # Type Narrowing
 
-## Type Guard Funktionen
+## Type Guard Funktionen [^5]
 
 ```ts
 type Dog = { kind: "dog"; bark: () => string };
@@ -223,7 +223,7 @@ function isCat(animal: Animal): animal is Cat {
 }
 ```
 
-Die Funktion `isCat` ist eine sogenannte "Type Guard" Funktion.
+Die Funktion `isCat` ist eine sogenannte "Type Guard" Funktion, sie returned einen "Type Predicate".
 Wird diese in einem `if`-Block verwendet, wird das Objekt, das als Parameter
 in diese Funktion übergeben wird, implizit auf den Guard-Typen gecastet.
 
@@ -231,19 +231,41 @@ Also folgendermaßen:
 
 ```ts
 function makeNoise(animal: Animal): void {
-    console.log(animal.meow()); // Fehler, meow is not a part of Animal
+    // console.log(animal.meow()); // Fehler, meow is not a part of Animal
     if (isCat(animal)) {
         console.log(animal.meow());
     }
-    console.log(animal.meow()); // Error, meow is not a part of Animal
+    // console.log(animal.meow()); // Error, meow is not a part of Animal
 }
 ```
 
 Innerhalb des `if` Blocks ist `animal` implizit vom Typ `Cat`, außerhalb ist es vom Typ `Animal`.
 
-## Type Narrowing
+### Type Narrowing [^6]
+
+Manchmal muss man nicht auf genau einen Typen casten, sondern es reicht sicherzustellen, dass ein bestimmtes Attribut oder eine bestimmt Funktion vorhanden ist.
+
+Dazu ein ähnliches Beispiel:
+
+```ts
+type Fish = { swim: () => void };
+type Human = { walk: () => void, swim: () => void };
+type Dog = { walk: () => void };
+type Bird = { fly: () => void };
+
+type Animal = Fish | Human | Dog | Bird;
+
+const letWalk(animal: Animal): void {
+    animal. ... // Typ hier 'Fish | Human | Dog | Bird', kein gemeinsames Attribut
+    if ("walk" in animal) {
+        animal.walk(); // korrekter Aufruf, Typ implizit hier 'Human | Dog', swim() kann nicht aufgerufen werden
+    }
+}
+```
 
 [^1]: https://dev.to/busypeoples/notes-on-typescript-phantom-types-kg9
 [^2]: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html
 [^3]: https://stackoverflow.com/questions/42291811/use-of-never-keyword-in-typescript
-[^4]: https://www.typescriptlang.org/docs/handbook/2/narrowing.html
+[^4]: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-never-type
+[^5]: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
+[^6]: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing
