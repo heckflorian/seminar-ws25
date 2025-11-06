@@ -16,6 +16,8 @@ type FormData<A> = string;
 
 Als nächstes wollen wir einem Bibliotheksbenutzer erlauben einen `FormData` Typ zu erstellen. Außerdem wollen wir den Typen in bestimmten Teilen der Bibliothek einschränken. Dafür machen wir zwei neue Typen
 
+Anmerken Laufzeit - Compilezeit
+
 ```ts
 type Unvalidated = { _type: "Unvalidated" };
 type Validated = { _type: "Validated" };
@@ -85,7 +87,7 @@ Wird jetzt der `Shape` typ aus dem beispiel erweitert ohne das switch statement 
 ```ts
 interface Triangle {
     kind: "triangle";
-    sideLength: number;
+    height: number;
 }
 
 type Shape = Circle | Square | Triangle;
@@ -203,6 +205,43 @@ if (validatedData !== null) {
     // process(initialData); // Error! Type '"Unvalidated"' is not assignable to Type '"Validated"'
 }
 ```
+
+# Type Narrowing
+
+## Type Guard Funktionen
+
+```ts
+type Dog = { kind: "dog"; bark: () => string };
+type Cat = { kind: "cat"; meow: () => string };
+type Goat = { kind: "goat"; iah: () => string };
+
+type Animal = Dog | Cat | Goat;
+
+// 'Type Guard' Funktion
+function isCat(animal: Animal): animal is Cat {
+    return animal.kind === "cat";
+}
+```
+
+Die Funktion `isCat` ist eine sogenannte "Type Guard" Funktion.
+Wird diese in einem `if`-Block verwendet, wird das Objekt, das als Parameter
+in diese Funktion übergeben wird, implizit auf den Guard-Typen gecastet.
+
+Also folgendermaßen:
+
+```ts
+function makeNoise(animal: Animal): void {
+    console.log(animal.meow()); // Fehler, meow is not a part of Animal
+    if (isCat(animal)) {
+        console.log(animal.meow());
+    }
+    console.log(animal.meow()); // Error, meow is not a part of Animal
+}
+```
+
+Innerhalb des `if` Blocks ist `animal` implizit vom Typ `Cat`, außerhalb ist es vom Typ `Animal`.
+
+## Type Narrowing
 
 [^1]: https://dev.to/busypeoples/notes-on-typescript-phantom-types-kg9
 [^2]: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html
