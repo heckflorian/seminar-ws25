@@ -4,9 +4,35 @@ Dieses Repository ist meine Abgabe zum Seminar "Was du schon immer über Program
 
 In diesem Repo möchte ich ein paar Verwendungen von expressiven Typen in TypeScript aufzeigen.
 
-## Phantom Types und Verwendung [^1]
+## Motivation
 
-Phantom Types sind Typen, die eine generische komponente haben, die nicht auf der rechten seite der typ deklaration vorkommen
+Man stelle sich vor, man hat ein Webformular, welches Daten von Nutzern erhält, welche man nun verarbeiten möchte.
+
+Hierbei können nun folgende Anwendungsfälle entstehen:
+- Daten könnten direkt nach der Eingabe bearbeitet, bzw. überprüft, werden können
+- Daten müssen validiert werden
+- Validierte Daten könnten auf eine spezielle Art und Weise transformiert werden
+- Validierte Daten müssen verarbeitet werden (und ausschließlich validierte Daten)
+
+Jetzt könnte man seine Daten als String speichern (oder als Array aus Strings, JavaScript Objekt, usw...)
+und dann Funktionen schreiben die jeweils das gewünschte erfüllen.
+
+Damit wäre das gewünschte erfüllt und das Formular hat seine Funktionalität erhalten.
+
+... was ist aber wenn ein etwas inkompetenter Entwickler sich nicht an die Vorgaben hält und unvalidierte Daten verarbeiten will?
+
+Dieser Fehler fällt zunächst nicht auf (und es gibt _selbstverständlich_ auch keine Test Cases die genau diesen Fall abdecken)
+und der Code geht in Produktion. Wenn Nutzer nun Daten in das Formular schreiben fliegt alles zur Run-Time um die Ohren und die 
+Anwendung stürtzt eventuell sogar ab.
+
+Hier wäre es also sehr schön, wenn dieser Fehler zur Compile-Time schon auffällt und deshalb gar nicht erst entstehen kann.
+Dabei können Phantom Typen helfen, welche im folgenden anhand des Formularbeispiels erklärt werden.
+
+Zum Abschluss werden noch zwei kleine, aber sehr nützliche 'Type Narrowing' Konstrukte in TypeScript gezeigt und erläutert.
+
+# Phantom Typen und deren Verwendung [^1]
+
+Phantom Typen sind Typen, die eine generische komponente haben, die nicht auf der rechten seite der typ deklaration vorkommen
 
 ```typescript
 type FormData<A> = string;
@@ -14,7 +40,8 @@ type FormData<A> = string;
 
 `FormData` ist ein Phantomtyp, da der `A` Parameter nur auf der linken Seite vorkommt.
 
-Als nächstes wollen wir einem Bibliotheksbenutzer erlauben einen `FormData` Typ zu erstellen. Außerdem wollen wir den Typen in bestimmten Teilen der Bibliothek einschränken. Dafür machen wir zwei neue Typen
+Als nächstes wollen wir einem Bibliotheksbenutzer erlauben einen `FormData` Typ zu erstellen. Außerdem wollen wir den Typen in 
+bestimmten Teilen der Bibliothek einschränken. Dafür machen wir zwei neue Typen
 
 Anmerken Laufzeit - Compilezeit
 
@@ -23,7 +50,8 @@ type Unvalidated = { _type: "Unvalidated" };
 type Validated = { _type: "Validated" };
 ```
 
-Als nächstes implementieren wir einen `FormData` Typen, der es dem Nutzer der Bibliothek verbietet, die `value` Typdefinition zu überschreiben. In diesem spezifischen Fall definieren wir `value` mit einem `never` Typ.
+Als nächstes implementieren wir einen `FormData` Typen, der es dem Nutzer der Bibliothek verbietet, die `value` Typdefinition zu 
+überschreiben. In diesem spezifischen Fall definieren wir `value` mit einem `never` Typ.
 
 ```ts
 type FormData<T, D = never> = { value: never } & T;
@@ -31,13 +59,18 @@ type FormData<T, D = never> = { value: never } & T;
 
 ## TypeScript `never` [^2] [^3] [^4]
 
-"The **never** type represents the type of values that never occur. Variables also acquire the type **never** when narrowed by any type guards that can never be true."
+"The **never** type represents the type of values that never occur. Variables also acquire the type **never** when narrowed by 
+any type guards that can never be true."
 
-Der `never` Typ ist quasi die leere Menge unter den typen. Der `never` typ ist ein subtyp jedes anderen typs, aber kein typ ist ein subtyp von, oder zuweisbar zum `never` Typ (außer `never` selbst) [^2]
+Der `never` Typ ist quasi die leere Menge unter den typen. Der `never` typ ist ein subtyp jedes anderen typs, aber kein typ ist 
+ein subtyp von, oder zuweisbar zum `never` Typ (außer `never` selbst) [^2]
 
-`never` kann auch in function expressions oder arrow functions, wenn diese function keine return statements hat, oder nur return statements mit `never` als typen hat _und_ der endpunkt der Funktion nicht erreichbar ist (durch kontrollflussanalyse bestimmt) ist der abgeleitete return type `never`
+`never` kann auch in function expressions oder arrow functions, wenn diese function keine return statements hat, oder nur return 
+statements mit `never` als typen hat _und_ der endpunkt der Funktion nicht erreichbar ist (durch kontrollflussanalyse bestimmt) 
+ist der abgeleitete return type `never`
 
-Wenn eine Funktion return typ `never` hat, müssen alle return statements (falls vorhanden) ausdrücke vom typ `never` haben und der endpunkt der funktion darf nicht erreichbar sein
+Wenn eine Funktion return typ `never` hat, müssen alle return statements (falls vorhanden) ausdrücke vom typ `never` haben und 
+der endpunkt der funktion darf nicht erreichbar sein
 
 Beispiele `never`
 
@@ -130,8 +163,8 @@ Zum schluss brauchen wir vielleicht noch eine `process` Funktion, welche unsere 
 type Process = (a: FormData<Validated>) => FormData<Validated>;
 ```
 
-Da wir nun diese Helfer Funktionen definiert haben, können wir nun daraus Funktionen implementieren, welche sicherstellen, dass nur
-ein bestimmter Typ von Daten in den jeweiligen Daten verwendet wird.
+Da wir nun diese Helfer Funktionen definiert haben, können wir nun daraus Funktionen implementieren, welche sicherstellen, dass 
+nur ein bestimmter Typ von Daten in den jeweiligen Daten verwendet wird.
 
 ```ts
 export const makeFormData: MakeFormData = (val) => {
@@ -241,9 +274,13 @@ function makeNoise(animal: Animal): void {
 
 Innerhalb des `if` Blocks ist `animal` implizit vom Typ `Cat`, außerhalb ist es vom Typ `Animal`.
 
+Dies ist zum Beispiel von starkem Vorteil in einem for-loop über ein Array (oder ähnliches) aus Union Typen, Vererbungstypen 
+(oder ähnlichem) um für Elemente von bestimmten Typen, bestimmte Methoden aufzurufen.
+
 ### Type Narrowing [^6]
 
-Manchmal muss man nicht auf genau einen Typen casten, sondern es reicht sicherzustellen, dass ein bestimmtes Attribut oder eine bestimmt Funktion vorhanden ist.
+Manchmal muss man nicht auf genau einen Typen casten, sondern es reicht sicherzustellen, dass ein bestimmtes Attribut oder eine
+bestimmte Funktion vorhanden ist.
 
 Dazu ein ähnliches Beispiel:
 
