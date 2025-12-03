@@ -45,8 +45,7 @@ export const process: Process = (data: FormData<Validated>) => {
 const initialData = makeFormData("test");
 const validatedData = validate(initialData);
 
-// validate("hello") // Type '"hello"' is not assignable to type '{value: never}'
-// validate({value: "hello"}) // Type 'string' is not assignable to type 'never'
+// process(validatedData); // Error! Type 'FormData<Validated, never> | null' is not assignable to type 'FormData<Validated, never>'
 
 if (validatedData !== null) {
     // validate(validatedData); // Error! Type '"Validated"' is not assignable to Type '"Unvalidated"'
