@@ -23,7 +23,7 @@ export const upperCase: UpperCase = (data) => {
 export const validate: Validate = (data) => {
     const internalData = data as InternalUnvalidated;
     if (internalData.value.length > 3) {
-        return { value: internalData.value } as FormaData<Validated>;
+        return { value: internalData.value } as FormData<Validated>;
     }
     return null;
 };
