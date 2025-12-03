@@ -1,3 +1,4 @@
+// Typlose Funktionen kopiert aus typescript beispiel
 export const makeFormData = (val) => {
     return { value: val };
 };
@@ -18,7 +19,7 @@ export const validate = (data) => {
 export const process = (data) => {
     const internalData = data;
     // Mache etwas mit den Daten
-    console.log("Data length is: ", internalData.value.length);
+    console.log("4th letter is: ", internalData.value.at(4));
     return { value: internalData.value };
 };
 
@@ -27,7 +28,8 @@ const validated1 = validate(testData);
 process(validated1)
 
 
-const testData2 = makeFormData("abc")
+const testData2 = makeFormData("abc");
+process(testData2)
 const validated2 = validate(testData2);
 process(validated2);
 
