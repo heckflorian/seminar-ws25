@@ -300,6 +300,10 @@ const letWalk(animal: Animal): void {
 }
 ```
 
+# Link zu diesem Repo
+
+![https://github.com/heckflorian/seminar-ws25](./assets/qr-code.svg)
+
 [^1]: https://dev.to/busypeoples/notes-on-typescript-phantom-types-kg9
 [^2]: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html
 [^3]: https://stackoverflow.com/questions/42291811/use-of-never-keyword-in-typescript
