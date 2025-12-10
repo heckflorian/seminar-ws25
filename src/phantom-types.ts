@@ -23,7 +23,7 @@ export const upperCase: UpperCase = (data) => {
 export const validate: Validate = (data) => {
     const internalData = data as InternalUnvalidated;
     if (internalData.value.length > 3) {
-        return { value: internalData.value } as FormaData<Validated>;
+        return { value: internalData.value } as FormData<Validated>;
     }
     return null;
 };
@@ -45,8 +45,7 @@ export const process: Process = (data: FormData<Validated>) => {
 const initialData = makeFormData("test");
 const validatedData = validate(initialData);
 
-// validate("hello") // Type '"hello"' is not assignable to type '{value: never}'
-// validate({value: "hello"}) // Type 'string' is not assignable to type 'never'
+// process(validatedData); // Error! Type 'FormData<Validated, never> | null' is not assignable to type 'FormData<Validated, never>'
 
 if (validatedData !== null) {
     // validate(validatedData); // Error! Type '"Validated"' is not assignable to Type '"Unvalidated"'
