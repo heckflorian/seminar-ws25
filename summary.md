@@ -26,5 +26,37 @@ type FormularDaten<Validiert> = string;
 Dadurch sind beide Typen effektiv string aber:
 
 ```ts
-FormularDaten<Unvalidiert> === FormularDaten<Validiert> // = false
+FormularDaten<Unvalidiert> !== FormularDaten<Validiert>
+```
+
+## Weitere TypeScript Funktionalitäten
+
+### Typeguard Funktionen
+
+Funktionen in TypeScript können von folgender Signatur sein:
+
+```ts
+function typeGuard(objekt: GenerischerType): objekt is SubTyp;
+```
+
+Anhand dieser Funktion kann der TypeScript Compiler erkennen, dass ein Objekt von einem spezifischen Subtyp ist, ohne
+dass im Code explizit gecasted werden muss.
+
+### Type narrowing
+
+Mithilfe des Keywords `in` kann in TypeScript (und generell auch in JavaScript) gecheckt werden, 
+ob Attribute in einem Objekt existieren.
+
+Der TypeScript Compiler benutzt dies auch, um Union Typen weiter einzuschränken, zum Beispiel also:
+
+```ts
+...
+let objekt: A | B | C | D;
+
+if ("a" in objekt || "b" in objekt) {
+    // objekt hier vom Typ "A | B"
+    objekt.a()
+    objekt.b()
+}
+...
 ```
